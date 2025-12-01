@@ -13,14 +13,28 @@ class DummySerial:
     def close(self):
         print(f"[TEST] Closing dummy serial on {self.port}")
 
+# non-rigorous estimations
+PRESET_SPEEDS = {
+    "esophagus": 0.8,
+    "stomach": 0.4,
+    "small_intestine": 0.5,
+    "colon": 0.2,
+    "ureter": 0.3,
+}
+
+def print_presets():
+    print("=== Speed Presets ===")
+    for name, val in PRESET_SPEEDS.items():
+        print(f"  {name:15s} -> {val:.2f}")
+    print("=====================")
+
 def main():
     # Set up argument parser
     parser = argparse.ArgumentParser(description="Control Arduino motor speed via serial.")
     parser.add_argument(
         "speed",
-        type=float,
         nargs='?',  # Optional argument
-        default=0.5,
+        default="0.5",
         help="Motor speed between 0.0 (stop) and 1.0 (full speed)"
     )
     parser.add_argument(
@@ -37,8 +51,20 @@ def main():
     
     args = parser.parse_args()
 
+    print_presets()
+
+    # Resolve speed: preset name or numeric
+    if args.speed in PRESET_SPEEDS:
+        speed_value = PRESET_SPEEDS[args.speed]
+    else:
+        try:
+            speed_value = float(args.speed)
+        except ValueError:
+            print(f"Error: Invalid speed '{args.speed}'. Use a number or one of: {', '.join(PRESET_SPEEDS.keys())}")
+            return
+
     # Validate speed
-    if not (0.0 <= args.speed <= 1.0):
+    if not (0.0 <= speed_value <= 1.0):
         print("Error: Speed must be between 0.0 and 1.0")
         return
 
@@ -62,13 +88,13 @@ def main():
             return
 
     # CHECK
-    print(f"SPEED: {args.speed:.2f}")
+    print(f"SPEED: {speed_value:.2f}")
     print(f"PORT: {port}")
 
     try:
         # Send speed
-        send_speed(arduino, args.speed)
-        action = "stopped" if args.speed == 0.0 else f"set to {args.speed:.2f}"
+        send_speed(arduino, speed_value)
+        action = "stopped" if speed_value == 0.0 else f"set to {speed_value:.2f}"
         prefix = "[TEST] " if args.test else ""
         print(f"{prefix}✅ Motor {action} on {port}")
     finally:
