@@ -136,9 +136,6 @@ python main.py 0.3 --port COM5
 Named organ preset (e.g., 'stomach') in test mode
 python main.py stomach --test
 
-Simple numeric preset alias 'one' (e.g., 0.1) in test mode
-python main.py one --test
-
 
 On startup, the program prints all available presets and their mapped speed values so you can see what is available each time you run it.
 
@@ -149,9 +146,6 @@ On startup, the program prints all available presets and their mapped speed valu
 Presets are defined in `main.py` like:
 
 PRESET_SPEEDS = {
-"one": 0.1,
-"two": 0.2,
-"three": 0.3,
 "esophagus": 0.8,
 "stomach": 0.4,
 "small_intestine": 0.5,
