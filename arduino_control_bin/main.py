@@ -2,6 +2,9 @@ import argparse
 from serial_utils import find_arduino_port, open_serial
 from arduino_controller import send_speed
 
+#TODO
+# make it last indefinetly or with time controls and quit func
+
 class DummySerial:
     """Minimal 'dummy' serial object for test mode."""
     def __init__(self, port="TEST_PORT"):
@@ -92,11 +95,25 @@ def main():
     print(f"PORT: {port}")
 
     try:
-        # Send speed
+        # Send speed once – Arduino keeps motor running at this speed
         send_speed(arduino, speed_value)
         action = "stopped" if speed_value == 0.0 else f"set to {speed_value:.2f}"
         prefix = "[TEST] " if args.test else ""
         print(f"{prefix}✅ Motor {action} on {port}")
+
+        # Wait for quit command
+        print("\nMotor running. Press 'q' then Enter to quit (or Ctrl+C).")
+        while True:
+            user_input = input("> ").strip().lower()
+            if user_input == "q":
+                print("Quitting and stopping motor...")
+                # Optionally send_speed(arduino, 0.0) here if firmware requires explicit stop
+                break
+            else:
+                print("Type 'q' then Enter to quit.")
+    except KeyboardInterrupt:
+        print("\nKeyboard interrupt received. Exiting.")
+        # Optionally send_speed(arduino, 0.0) here as well
     finally:
         arduino.close()
 
